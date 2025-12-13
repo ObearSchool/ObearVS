@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OBEAR 星際學院 v7.8 (完美適配版)</title>
+    <title>OBEAR 星際學院 v7.9 (特訓修正版)</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
@@ -26,29 +26,23 @@
             user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
-        /* ▼▼▼ 修正 1：螢幕容器設定 ▼▼▼ */
+        /* RWD 容器設定 */
         .screen { 
             display: none; 
             flex-direction: column; 
             width: 100%; 
             height: 100%; 
-            padding: 20px; /* 增加內距，避免貼邊 */
+            padding: 20px; 
             box-sizing: border-box; 
             align-items: center; 
             position: relative; 
-            overflow-y: auto; /* 關鍵：內容太多時允許捲動 */
-            overflow-x: hidden; /* 禁止左右捲動 */
+            overflow-y: auto; /* 允許垂直捲動 */
+            overflow-x: hidden;
         }
         .screen.active { display: flex; }
         
-        /* 登入畫面專用：確保垂直置中，但若螢幕太小則允許流動 */
-        #screen-login {
-            justify-content: center; /* 嘗試置中 */
-        }
-        /* 如果螢幕高度小於 600px (手機橫拿)，改為靠上對齊，避免頭尾被切 */
-        @media (max-height: 600px) {
-            #screen-login { justify-content: flex-start; }
-        }
+        #screen-login { justify-content: center; }
+        @media (max-height: 600px) { #screen-login { justify-content: flex-start; } }
 
         .btn { background: var(--brand-primary); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin: 5px; box-shadow: 0 4px 0 #003366; transition: transform 0.1s; flex-shrink: 0; }
         .btn:active { transform: translateY(4px); box-shadow: none; }
@@ -96,9 +90,9 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
         .quiz-box { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; max-height: 90vh; overflow-y: auto; }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .opt-btn { background: #f8f9fa; border: 2px solid #e9ecef; color: #333; padding: 15px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; font-weight: bold; height: 80px; display: flex; align-items: center; justify-content: center; }
+        .opt-btn { background: #f8f9fa; border: 2px solid #e9ecef; color: #333; padding: 15px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; font-weight: bold; height: 80px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
 
-        /* 動畫 */
+        /* 動畫 (慢速版) */
         .anim-atk-up { animation: atkUp 1.0s ease-in-out; }
         @keyframes atkUp { 0% { transform: translateY(0); } 40% { transform: translateY(50px) scale(0.9); } 60% { transform: translateY(-200px) scale(1.2); } 100% { transform: translateY(0); } }
         .anim-atk-down { animation: atkDown 1.0s ease-in-out; }
@@ -125,18 +119,19 @@
         .fade-in { animation: fadeIn 0.5s forwards; }
         @keyframes fadeIn { to { opacity: 1; } }
         
+        /* 詳解與結算 */
         .explanation-text { text-align: left; background: #fff3cd; color: #856404; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #ffeeba; line-height: 1.6; }
         .captain-img { width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 5px solid #00509B; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .result-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 10px; }
         .result-text { font-size: 1.2rem; margin-bottom: 20px; color: #333; font-weight: bold; }
 
-        /* ▼▼▼ 修正 2：橫幅圖片自動適配 ▼▼▼ */
+        /* 橫幅圖片 */
         .hero-banner {
             width: 100%;
-            max-width: 500px; /* 電腦上不超過 500px */
+            max-width: 500px; 
             height: auto;
-            max-height: 35vh; /* 手機上高度不超過螢幕的 35%，避免佔滿 */
-            object-fit: contain; /* 保持比例 */
+            max-height: 35vh; 
+            object-fit: contain; 
             margin-bottom: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -187,7 +182,7 @@
 
     <div id="screen-login" class="screen active" style="background: var(--brand-primary);">
         <img src="assets/hero_banner.png" class="hero-banner" onerror="this.src='https://via.placeholder.com/500x250/003366/FFFFFF?text=OBEAR+Academy';">
-        <h1 style="color: white; margin-bottom: 20px; font-size: 1.8rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); text-align:center;">OBEAR 星際學院 v7.8</h1>
+        <h1 style="color: white; margin-bottom: 20px; font-size: 1.8rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); text-align:center;">OBEAR 星際學院 v7.9</h1>
         
         <button class="btn btn-light" style="margin-bottom: 15px; font-size: 0.9rem;" onclick="Story.start()">📖 領航員入學手冊</button>
         
@@ -195,7 +190,7 @@
         
         <div id="login-btns" style="display:flex; flex-direction:column; gap:10px; width:100%; align-items:center;"></div>
         
-        <div style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 20px; text-align:center;">v7.8 完美適配版</div>
+        <div style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 20px; text-align:center;">v7.9 特訓修正版</div>
     </div>
 
     <div id="screen-home" class="screen">
@@ -309,7 +304,7 @@
             play(key) {
                 try {
                     const s = this.sounds[key];
-                    if(s) { s.currentTime = 0; s.play().catch(e => console.log("Audio play failed (interaction needed)", e)); }
+                    if(s) { s.currentTime = 0; s.play().catch(e => console.log("Audio play failed", e)); }
                 } catch(e) { console.warn("Audio Error", e); }
             }
         };
@@ -371,24 +366,14 @@
             selectEl.innerHTML = '';
             const lastUrl = localStorage.getItem('obear_last_course_url');
             let isFirst = true;
-
             for (const [name, url] of Object.entries(COURSE_MENU)) {
                 const opt = document.createElement('option');
                 opt.value = url;
                 opt.innerText = name;
                 selectEl.appendChild(opt);
-
-                if (url === lastUrl) {
-                    opt.selected = true;
-                    loadQuestionsByUrl(url);
-                    isFirst = false;
-                }
+                if (url === lastUrl) { opt.selected = true; loadQuestionsByUrl(url); isFirst = false; }
             }
-
-            if (isFirst) {
-                const firstUrl = Object.values(COURSE_MENU)[0];
-                if(firstUrl) loadQuestionsByUrl(firstUrl);
-            }
+            if (isFirst) { const firstUrl = Object.values(COURSE_MENU)[0]; if(firstUrl) loadQuestionsByUrl(firstUrl); }
         }
 
         const SAVE_KEY = 'obear_save_v7_1';
@@ -396,12 +381,10 @@
         const SaveSystem = {
             data: null,
             getInitialData() { return { level: 1, exp: 0, maxExp: 100, coins: 0, formId: 'baby', path: 'speed', wins: 0, matches: 0 }; },
-            
             checkSave() {
                 const raw = localStorage.getItem(SAVE_KEY);
                 const btnContainer = document.getElementById('login-btns');
                 btnContainer.innerHTML = ''; 
-
                 if (raw) {
                     this.data = JSON.parse(raw);
                     const btnCont = document.createElement('button');
@@ -426,16 +409,10 @@
                     btnContainer.appendChild(btnNew);
                 }
             },
-
             initGame(isNew) {
-                if(isNew) {
-                    this.data = this.getInitialData();
-                    this.save();
-                }
-                UI.updateHome();
-                UI.showScreen('screen-home');
+                if(isNew) { this.data = this.getInitialData(); this.save(); }
+                UI.updateHome(); UI.showScreen('screen-home');
             },
-
             save() { if(this.data) localStorage.setItem(SAVE_KEY, JSON.stringify(this.data)); UI.updateHome(); },
             logout() { location.reload(); }
         };
@@ -456,11 +433,7 @@
                 const d = SaveSystem.data;
                 let cost = (item === 'meat') ? 100 : 200;
                 let gain = (item === 'meat') ? 50 : 120;
-                if (d.coins >= cost) { 
-                    d.coins -= cost; 
-                    AudioSys.play('coin'); 
-                    this.gainExp(gain); 
-                } else { alert("錢不夠！"); }
+                if (d.coins >= cost) { d.coins -= cost; AudioSys.play('coin'); this.gainExp(gain); } else { alert("錢不夠！"); }
                 SaveSystem.save();
             },
             gainExp(amount) {
@@ -471,12 +444,8 @@
                     UI.showFloat(`升級！Lv.${d.level}`, '#f1c40f');
                     AudioSys.play('evolve'); 
                     const p = d.path || 'speed';
-                    if (d.level === 10) {
-                        if(p==='speed') this.evolve('speed1'); if(p==='def') this.evolve('def1'); if(p==='atk') this.evolve('atk1');
-                    }
-                    if (d.level === 30) {
-                        if(p==='speed') this.evolve('speed2'); if(p==='def') this.evolve('def2'); if(p==='atk') this.evolve('atk2');
-                    }
+                    if (d.level === 10) { if(p==='speed') this.evolve('speed1'); if(p==='def') this.evolve('def1'); if(p==='atk') this.evolve('atk1'); }
+                    if (d.level === 30) { if(p==='speed') this.evolve('speed2'); if(p==='def') this.evolve('def2'); if(p==='atk') this.evolve('atk2'); }
                 }
                 SaveSystem.save();
             },
@@ -558,7 +527,6 @@
                 el.style.textShadow = `0 0 20px ${color}`;
                 container.appendChild(el);
                 setTimeout(() => container.innerHTML = '', 3000);
-
                 document.body.classList.add('shaking-screen');
                 setTimeout(() => document.body.classList.remove('shaking-screen'), 800);
             },
@@ -625,11 +593,9 @@
                     Battle.enemyMaxHp = data.maxHp;
                     Battle.enemyAtk = data.atk;
                     Battle.enemyFormId = data.formId;
-                    
                     const enemyImg = document.getElementById('enemy-img');
                     enemyImg.src = BEAR_DB[data.formId] ? BEAR_DB[data.formId].img : BEAR_DB['baby'].img;
                     enemyImg.style.display = 'block'; 
-                    
                     Battle.init(data.isHost); 
                 }
                 if(data.type === 'NEW_ROUND') Battle.startRound(data.qIdx);
@@ -643,50 +609,41 @@
             myHp: 0, myMaxHp: 0, myAtk: 0,
             enemyHp: 0, enemyMaxHp: 0, enemyAtk: 0, enemyFormId: 'baby',
             isHost: false, hostStreak: 0, clientStreak: 0, myMove: null, clientMove: null, 
-
             init(opponentIsHost) {
                 this.isHost = !opponentIsHost; 
                 const d = SaveSystem.data;
                 const s = getStats(d.formId, d.level);
                 this.myHp = s.hp; this.myMaxHp = s.hp; this.myAtk = s.atk;
                 this.hostStreak = 0; this.clientStreak = 0;
-
                 const myImg = document.getElementById('my-img');
                 myImg.src = BEAR_DB[d.formId].img;
                 myImg.style.display = 'block'; 
-
                 document.getElementById('battle-my-hp-val').innerText = this.myHp;
                 this.updateUI();
                 UI.showScreen('screen-battle');
-
                 if(this.isHost) setTimeout(() => this.broadcastNewRound(), 2000);
                 else document.getElementById('battle-msg').innerText = "等待房主開始...";
             },
-
             broadcastNewRound() {
                 const qIdx = Math.floor(Math.random() * QUESTIONS.length);
                 Network.send({ type: 'NEW_ROUND', qIdx: qIdx });
                 this.startRound(qIdx);
             },
-
             startRound(qIdx) {
                 this.myMove = null; this.clientMove = null;
                 document.getElementById('battle-msg').innerText = "戰鬥開始！";
                 Quiz.show(qIdx, true); 
             },
-
             submitMove(isCorrect, timeUsed) {
                 this.myMove = { correct: isCorrect, time: timeUsed };
                 document.getElementById('battle-msg').innerText = "已攻擊，等待對手...";
                 if(this.isHost) this.checkRoundEnd();
                 else Network.send({ type: 'ANSWER', correct: isCorrect, time: timeUsed });
             },
-
             handleClientAnswer(correct, time) {
                 this.clientMove = { correct: correct, time: time };
                 this.checkRoundEnd();
             },
-
             checkRoundEnd() {
                 if(this.myMove && this.clientMove) {
                     const p1 = this.myMove; const p2 = this.clientMove;
@@ -698,33 +655,20 @@
                     else { if(p1.time < p2.time) winner = 'host'; else winner = 'client'; }
 
                     res.winner = winner;
-
                     if (winner === 'host') {
                         this.hostStreak++; this.clientStreak = 0; res.dmg = this.myAtk;
-                        if (this.hostStreak >= 3) {
-                            res.isCrit = true; res.dmg *= 2; this.hostStreak = 0;
-                            const skill = BEAR_DB[SaveSystem.data.formId] || BEAR_DB['baby'];
-                            res.skillName = skill.skillName; res.skillColor = skill.skillColor;
-                        }
+                        if (this.hostStreak >= 3) { res.isCrit = true; res.dmg *= 2; this.hostStreak = 0; const skill = BEAR_DB[SaveSystem.data.formId] || BEAR_DB['baby']; res.skillName = skill.skillName; res.skillColor = skill.skillColor; }
                     } else if (winner === 'client') {
                         this.clientStreak++; this.hostStreak = 0; res.dmg = this.enemyAtk;
-                        if (this.clientStreak >= 3) {
-                            res.isCrit = true; res.dmg *= 2; this.clientStreak = 0;
-                            const skill = BEAR_DB[this.enemyFormId] || BEAR_DB['baby'];
-                            res.skillName = skill.skillName; res.skillColor = skill.skillColor;
-                        }
+                        if (this.clientStreak >= 3) { res.isCrit = true; res.dmg *= 2; this.clientStreak = 0; const skill = BEAR_DB[this.enemyFormId] || BEAR_DB['baby']; res.skillName = skill.skillName; res.skillColor = skill.skillColor; }
                     } else { this.hostStreak = 0; this.clientStreak = 0; res.dmg = Math.floor(this.myMaxHp * 0.1); }
-
                     this.applyResult(res); Network.send({ type: 'RESULT', ...res }); 
                     setTimeout(() => this.broadcastNewRound(), res.isCrit ? 5000 : 4000); 
                 }
             },
-
             applyResult(res) {
                 UI.hideModal('modal-quiz');
-                
                 const HIT_DELAY = 500; 
-
                 if(res.winner === 'both_wrong') {
                     UI.showFloat("雙方失誤！自爆！", '#e74c3c');
                     AudioSys.play('wrong'); 
@@ -734,50 +678,20 @@
                 } else {
                     const iAmWinner = (this.isHost && res.winner === 'host') || (!this.isHost && res.winner === 'client');
                     if (res.isCrit) UI.showCrit(res.skillName, res.skillColor);
-                    
                     if(iAmWinner) {
                         UI.animAttack(true); 
-                        setTimeout(() => {
-                            UI.showFloat(`攻擊成功！ -${res.dmg}`, '#f1c40f');
-                            UI.animDamage(false); 
-                            this.enemyHp -= res.dmg; 
-                            this.updateUI(); 
-                            this.checkWin();
-                        }, HIT_DELAY); 
+                        setTimeout(() => { UI.showFloat(`攻擊成功！ -${res.dmg}`, '#f1c40f'); UI.animDamage(false); this.enemyHp -= res.dmg; this.updateUI(); this.checkWin(); }, HIT_DELAY); 
                     } else {
                         UI.animAttack(false);
-                        setTimeout(() => {
-                            UI.showFloat(`被擊中... -${res.dmg}`, '#c0392b');
-                            UI.animDamage(true); 
-                            this.myHp -= res.dmg; 
-                            this.updateUI(); 
-                            this.checkWin();
-                        }, HIT_DELAY);
+                        setTimeout(() => { UI.showFloat(`被擊中... -${res.dmg}`, '#c0392b'); UI.animDamage(true); this.myHp -= res.dmg; this.updateUI(); this.checkWin(); }, HIT_DELAY);
                     }
                 }
             },
-
             checkWin() {
-                if(this.myHp <= 0 || this.enemyHp <= 0) {
-                      SaveSystem.data.matches = (SaveSystem.data.matches || 0) + 1;
-                }
-
-                if(this.myHp <= 0) {
-                    SaveSystem.save();
-                    setTimeout(() => { 
-                        UI.showBattleResult(false); 
-                    }, 1500);
-                }
-                else if(this.enemyHp <= 0) {
-                    SaveSystem.data.coins += 1000;
-                    SaveSystem.data.wins = (SaveSystem.data.wins || 0) + 1; 
-                    SaveSystem.save();
-                    setTimeout(() => { 
-                        UI.showBattleResult(true); 
-                    }, 1500);
-                }
+                if(this.myHp <= 0 || this.enemyHp <= 0) { SaveSystem.data.matches = (SaveSystem.data.matches || 0) + 1; }
+                if(this.myHp <= 0) { SaveSystem.save(); setTimeout(() => { UI.showBattleResult(false); }, 1500); }
+                else if(this.enemyHp <= 0) { SaveSystem.data.coins += 1000; SaveSystem.data.wins = (SaveSystem.data.wins || 0) + 1; SaveSystem.save(); setTimeout(() => { UI.showBattleResult(true); }, 1500); }
             },
-
             updateUI() {
                 document.getElementById('my-hp').style.width = Math.max(0, (this.myHp/this.myMaxHp)*100) + "%";
                 document.getElementById('enemy-hp').style.width = Math.max(0, (this.enemyHp/this.enemyMaxHp)*100) + "%";
@@ -786,41 +700,41 @@
         };
 
         const Quiz = {
-            startTime: 0, isPvp: false, currentQ: null,
+            startTime: 0, isPvp: false, currentQ: null, isLocked: false,
             startTraining() { this.isPvp = false; this.show(0, false); },
             show(qIdx, isPvp) {
                 this.isPvp = isPvp;
+                this.isLocked = false; 
                 this.currentQ = (isPvp) ? QUESTIONS[qIdx] : QUESTIONS[Math.floor(Math.random()*QUESTIONS.length)];
                 document.getElementById('q-content').style.display = 'block';
                 document.getElementById('q-waiting').style.display = 'none';
                 document.getElementById('q-text').innerText = this.currentQ.q;
                 const grid = document.getElementById('q-options');
-                grid.innerHTML = '';
+                grid.innerHTML = ''; 
                 this.startTime = Date.now();
                 this.currentQ.opts.forEach((opt, idx) => {
                     const btn = document.createElement('button');
                     btn.className = 'opt-btn';
                     btn.innerText = opt;
-                    btn.onclick = () => this.answer(idx, this.currentQ.a);
+                    btn.onclick = () => this.answer(idx, this.currentQ.a, btn);
                     grid.appendChild(btn);
                 });
                 UI.showModal('modal-quiz');
             },
-            answer(idx, correctIdx) {
+            answer(idx, correctIdx, btnElement) {
+                if (this.isLocked) return;
                 const timeUsed = Date.now() - this.startTime;
                 const isCorrect = (idx === correctIdx);
-                
                 if(!this.isPvp) {
+                    this.isLocked = true; 
                     if(isCorrect) { 
-                        AudioSys.play('correct');
-                        UI.hideModal('modal-quiz');
-                        SaveSystem.data.coins += 200; 
-                        SaveSystem.save(); 
-                        UI.showFloat("💰 +$200"); 
+                        btnElement.style.background = '#d4edda'; btnElement.style.border = '2px solid #28a745';
+                        AudioSys.play('correct'); SaveSystem.data.coins += 200; SaveSystem.save(); UI.showFloat("💰 +$200"); 
+                        setTimeout(() => { UI.hideModal('modal-quiz'); }, 1000);
                     } else { 
+                        btnElement.style.background = '#f8d7da'; btnElement.style.border = '2px solid #dc3545';
                         AudioSys.play('wrong');
-                        document.getElementById('exp-content').innerHTML = this.currentQ.explanation;
-                        UI.showModal('modal-explanation');
+                        setTimeout(() => { document.getElementById('exp-content').innerHTML = this.currentQ.explanation; UI.showModal('modal-explanation'); }, 1000);
                     }
                 } else {
                     document.getElementById('q-content').style.display = 'none';
@@ -833,62 +747,22 @@
         const Story = {
             step: 0,
             content: [
-                {
-                    title: "👋 歡迎來到學院",
-                    text: "嗨，新來的領航員！歡迎來到全宇宙最頂尖的學府——『Obear 星際學院』。\n\n在這裡，我們不比肌肉，比的是大腦的運轉速度！\n你是否已經準備好，領取那隻屬於你的夥伴了呢？",
-                    img: null
-                },
-                {
-                    title: "🧸 關於你的夥伴",
-                    text: "看！這隻看起來呆呆的、正在吃手指的家夥，就是你的搭檔——『原初小熊』。\n\n別看它現在只有 Lv.1，它的基因裡可是隱藏著統治宇宙的力量。但這股力量正在沉睡，只有一種東西能喚醒它......\n\n那就是**『正確的知識』**！",
-                    img: "assets/bear_baby.png"
-                },
-                {
-                    title: "📜 學院生存法則",
-                    text: "身為學院的一份子，你必須牢記以下三條鐵律：\n\n1️⃣ **知識即是財富**：去『模擬考特訓』答題賺金幣！\n2️⃣ **吃飽才有力氣**：去『福利社』買肉肉進化！你的培育決定它的型態（疾風/防禦/攻擊）。\n3️⃣ **實戰檢驗真理**：去『競技場』與同學連線，腦波同步率越高，越能釋放必殺技！",
-                    img: null
-                },
-                {
-                    title: "🚀 準備好了嗎？",
-                    text: "解說結束。\n\n你的原初小熊正眼巴巴地看著你，它的肚子已經在咕嚕咕嚕叫了。\n\n親愛的領航員，現在就登入系統，開始你的第一堂課吧！",
-                    img: null
-                }
+                { title: "👋 歡迎來到學院", text: "嗨，新來的領航員！歡迎來到全宇宙最頂尖的學府——『Obear 星際學院』。\n\n在這裡，我們不比肌肉，比的是大腦的運轉速度！\n你是否已經準備好，領取那隻屬於你的夥伴了呢？", img: null },
+                { title: "🧸 關於你的夥伴", text: "看！這隻看起來呆呆的、正在吃手指的家夥，就是你的搭檔——『原初小熊』。\n\n別看它現在只有 Lv.1，它的基因裡可是隱藏著統治宇宙的力量。但這股力量正在沉睡，只有一種東西能喚醒它......\n\n那就是**『正確的知識』**！", img: "assets/bear_baby.png" },
+                { title: "📜 學院生存法則", text: "身為學院的一份子，你必須牢記以下三條鐵律：\n\n1️⃣ **知識即是財富**：去『模擬考特訓』答題賺金幣！\n2️⃣ **吃飽才有力氣**：去『福利社』買肉肉進化！你的培育決定它的型態（疾風/防禦/攻擊）。\n3️⃣ **實戰檢驗真理**：去『競技場』與同學連線，腦波同步率越高，越能釋放必殺技！", img: null },
+                { title: "🚀 準備好了嗎？", text: "解說結束。\n\n你的原初小熊正眼巴巴地看著你，它的肚子已經在咕嚕咕嚕叫了。\n\n親愛的領航員，現在就登入系統，開始你的第一堂課吧！", img: null }
             ],
-            start() {
-                this.step = 0;
-                UI.showModal('modal-story');
-                this.render();
-            },
-            next() {
-                this.step++;
-                if (this.step >= this.content.length) {
-                    UI.hideModal('modal-story');
-                } else {
-                    this.render();
-                }
-            },
+            start() { this.step = 0; UI.showModal('modal-story'); this.render(); },
+            next() { this.step++; if (this.step >= this.content.length) { UI.hideModal('modal-story'); } else { this.render(); } },
             render() {
                 const data = this.content[this.step];
                 document.getElementById('story-title').innerText = data.title;
-                
                 let formattedText = data.text.replace(/\*\*(.*?)\*\*/g, '<b style="color:#d35400">$1</b>');
                 document.getElementById('story-text').innerHTML = formattedText;
-
                 const imgEl = document.getElementById('story-img');
-                if(data.img) {
-                    imgEl.src = data.img;
-                    imgEl.style.display = 'block';
-                } else {
-                    imgEl.style.display = 'none';
-                }
-
-                if (this.step === this.content.length - 1) {
-                    document.getElementById('story-btn-next').style.display = 'none';
-                    document.getElementById('story-btn-close').style.display = 'inline-block';
-                } else {
-                    document.getElementById('story-btn-next').style.display = 'inline-block';
-                    document.getElementById('story-btn-close').style.display = 'none';
-                }
+                if(data.img) { imgEl.src = data.img; imgEl.style.display = 'block'; } else { imgEl.style.display = 'none'; }
+                if (this.step === this.content.length - 1) { document.getElementById('story-btn-next').style.display = 'none'; document.getElementById('story-btn-close').style.display = 'inline-block'; } 
+                else { document.getElementById('story-btn-next').style.display = 'inline-block'; document.getElementById('story-btn-close').style.display = 'none'; }
             }
         };
 
