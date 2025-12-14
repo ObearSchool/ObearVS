@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OBEAR 星際學院 v7.9.1 (詳解修復版)</title>
+    <title>OBEAR 星際學院 v8.0 (社交對戰版)</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
@@ -58,6 +58,13 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             flex-shrink: 0;
         }
+        
+        /* v8.0 新增：暱稱輸入框 */
+        .name-input {
+            width: 80%; max-width: 280px; padding: 10px; font-size: 1.1rem;
+            border-radius: 8px; border: 2px solid #ccc;
+            margin-bottom: 15px; text-align: center;
+        }
 
         /* 圖片與動畫 */
         .monster-stage { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; min-height: 200px; }
@@ -83,13 +90,17 @@
         .battle-avatar { max-height: 50%; width: auto; object-fit: contain; transition: transform 0.1s; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); display: block; }
         .battle-info { color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.8); font-weight: bold; margin: 5px 0; width: 80%; text-align: center; }
         
+        /* v8.0 新增：戰鬥中的名字顯示 */
+        .battle-name-tag {
+            background: rgba(0,0,0,0.6); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 0.9rem; margin-bottom: 5px;
+        }
+
         .battle-controls { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: center; }
         .battle-msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; pointer-events: none; z-index: 10; width: 80%; text-align: center;}
 
         /* Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
         
-        /* ▼▼▼ 關鍵修正：強制拉高詳解視窗層級，避免被遮擋 ▼▼▼ */
         #modal-explanation { z-index: 3000 !important; }
 
         .quiz-box { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; max-height: 90vh; overflow-y: auto; }
@@ -186,15 +197,17 @@
 
     <div id="screen-login" class="screen active" style="background: var(--brand-primary);">
         <img src="assets/hero_banner.png" class="hero-banner" onerror="this.src='https://via.placeholder.com/500x250/003366/FFFFFF?text=OBEAR+Academy';">
-        <h1 style="color: white; margin-bottom: 20px; font-size: 1.8rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); text-align:center;">OBEAR 星際學院 v7.9.1</h1>
+        <h1 style="color: white; margin-bottom: 20px; font-size: 1.8rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); text-align:center;">OBEAR 星際學院 v8.0</h1>
         
+        <input type="text" id="player-name-input" class="name-input" placeholder="請輸入你的名字 (例如: 王小明)">
+
         <button class="btn btn-light" style="margin-bottom: 15px; font-size: 0.9rem;" onclick="Story.start()">📖 領航員入學手冊</button>
         
         <select id="course-select" class="course-selector" onchange="loadQuestionsByUrl(this.value)"></select>
         
         <div id="login-btns" style="display:flex; flex-direction:column; gap:10px; width:100%; align-items:center;"></div>
         
-        <div style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 20px; text-align:center;">v7.9.1 詳解修復版</div>
+        <div style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 20px; text-align:center;">v8.0 社交對戰版</div>
     </div>
 
     <div id="screen-home" class="screen">
@@ -265,15 +278,14 @@
 
     <div id="screen-battle" class="screen">
         <div class="battle-half battle-top">
-            <div class="battle-info">對手</div>
-            <div class="bar-container" style="width:60%"><div id="enemy-hp" class="bar-fill bar-hp" style="width: 100%"></div></div>
+            <div class="battle-name-tag" id="enemy-name-display">對手</div> <div class="bar-container" style="width:60%"><div id="enemy-hp" class="bar-fill bar-hp" style="width: 100%"></div></div>
             <img id="enemy-img" class="battle-avatar" src="" onerror="this.style.display='none'">
         </div>
         <div class="battle-msg" id="battle-msg">⚡ 正在同步腦波訊號...</div>
         <div class="battle-half battle-bottom">
             <img id="my-img" class="battle-avatar" src="" onerror="this.style.display='none'">
             <div class="bar-container" style="width:60%"><div id="my-hp" class="bar-fill bar-hp" style="width: 100%"></div></div>
-            <div class="battle-info">你 (HP: <span id="battle-my-hp-val">0</span>)</div>
+            <div class="battle-name-tag" id="my-name-display">你</div> <div class="battle-info">HP: <span id="battle-my-hp-val">0</span></div>
             <div class="battle-controls">
                 <button class="btn btn-red" id="btn-attack" onclick="Battle.requestAttack()" style="width:80%; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);">⚡ 攻擊</button>
             </div>
@@ -317,7 +329,7 @@
             "📚 國三自然複習": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=0&single=true&output=csv",
             "⚛️ 高二物理化學": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=1509348137&single=true&output=csv",
             "🔬 國二理化": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=680136498&single=true&output=csv",
-	    "🏫 再興中學高二物化": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=49145040&single=true&output=csv"
+            "🏫 再興中學高二物化": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=49145040&single=true&output=csv"
         };
 
         const BEAR_DB = {
@@ -381,41 +393,61 @@
             if (isFirst) { const firstUrl = Object.values(COURSE_MENU)[0]; if(firstUrl) loadQuestionsByUrl(firstUrl); }
         }
 
-        const SAVE_KEY = 'obear_save_v7_1';
+        // v8.0 更新存檔KEY
+        const SAVE_KEY = 'obear_save_v8_0';
 
         const SaveSystem = {
             data: null,
-            getInitialData() { return { level: 1, exp: 0, maxExp: 100, coins: 0, formId: 'baby', path: 'speed', wins: 0, matches: 0 }; },
+            // v8.0 新增 playerName
+            getInitialData() { return { level: 1, exp: 0, maxExp: 100, coins: 0, formId: 'baby', path: 'speed', wins: 0, matches: 0, playerName: '' }; },
             checkSave() {
                 const raw = localStorage.getItem(SAVE_KEY);
                 const btnContainer = document.getElementById('login-btns');
+                const nameInput = document.getElementById('player-name-input');
                 btnContainer.innerHTML = ''; 
+                
                 if (raw) {
                     this.data = JSON.parse(raw);
+                    // 恢復上次的名字
+                    if(this.data.playerName) nameInput.value = this.data.playerName;
+
                     const btnCont = document.createElement('button');
                     btnCont.className = 'btn btn-green';
                     btnCont.style.width = '200px';
                     btnCont.innerText = `繼續冒險 (Lv.${this.data.level})`;
-                    btnCont.onclick = () => { UI.updateHome(); UI.showScreen('screen-home'); };
+                    btnCont.onclick = () => this.startGameHandler(false);
                     btnContainer.appendChild(btnCont);
                     
                     const btnReset = document.createElement('button');
                     btnReset.className = 'btn btn-light';
                     btnReset.style.width = '200px';
                     btnReset.innerText = '重新開始';
-                    btnReset.onclick = () => { if(confirm('確定要刪除進度嗎？')) this.initGame(true); };
+                    btnReset.onclick = () => { if(confirm('確定要刪除進度嗎？')) this.startGameHandler(true); };
                     btnContainer.appendChild(btnReset);
                 } else {
                     const btnNew = document.createElement('button');
                     btnNew.className = 'btn btn-green';
                     btnNew.style.width = '200px';
                     btnNew.innerText = '開始新遊戲';
-                    btnNew.onclick = () => this.initGame(true);
+                    btnNew.onclick = () => this.startGameHandler(true);
                     btnContainer.appendChild(btnNew);
                 }
             },
+            // v8.0 新增：統一處理開始遊戲，保存名字
+            startGameHandler(isNew) {
+                const nameInput = document.getElementById('player-name-input');
+                const name = nameInput.value.trim() || "領航員"; // 預設名字
+                
+                if(isNew) {
+                    this.data = this.getInitialData();
+                }
+                
+                this.data.playerName = name; // 更新名字
+                this.save();
+                this.initGame(false); // 這裡已經是記憶體資料了，不需要再 reset
+            },
             initGame(isNew) {
-                if(isNew) { this.data = this.getInitialData(); this.save(); }
+                // 相容舊code, 實際邏輯在 handler
                 UI.updateHome(); UI.showScreen('screen-home');
             },
             save() { if(this.data) localStorage.setItem(SAVE_KEY, JSON.stringify(this.data)); UI.updateHome(); },
@@ -495,7 +527,11 @@
                 const bear = BEAR_DB[d.formId] || BEAR_DB['baby'];
                 const stats = getStats(d.formId, d.level);
                 document.getElementById('ui-coins').innerText = d.coins;
-                document.getElementById('ui-name').innerText = bear.name;
+                
+                // v8.0 更新：顯示玩家名字 + 熊的名字
+                const displayName = d.playerName ? `${d.playerName} 的 ${bear.name}` : bear.name;
+                document.getElementById('ui-name').innerText = displayName;
+
                 document.getElementById('ui-lvl').innerText = d.level;
                 document.getElementById('main-bear-img').src = bear.img; 
                 document.getElementById('main-bear-img').style.display = 'block'; 
@@ -590,7 +626,8 @@
             sendInfo(isHost) {
                 const d = SaveSystem.data;
                 const s = getStats(d.formId, d.level);
-                this.send({ type: 'INFO', formId: d.formId, maxHp: s.hp, atk: s.atk, isHost: isHost });
+                // v8.0：傳送名字
+                this.send({ type: 'INFO', formId: d.formId, maxHp: s.hp, atk: s.atk, isHost: isHost, playerName: d.playerName });
             },
             handle(data) {
                 if(data.type === 'INFO') {
@@ -598,12 +635,19 @@
                     Battle.enemyMaxHp = data.maxHp;
                     Battle.enemyAtk = data.atk;
                     Battle.enemyFormId = data.formId;
+                    
+                    // v8.0：接收並儲存對手名字
+                    Battle.enemyName = data.playerName || "對手";
+                    
                     const enemyImg = document.getElementById('enemy-img');
                     enemyImg.src = BEAR_DB[data.formId] ? BEAR_DB[data.formId].img : BEAR_DB['baby'].img;
                     enemyImg.style.display = 'block'; 
                     Battle.init(data.isHost); 
                 }
-                if(data.type === 'NEW_ROUND') Battle.startRound(data.qIdx);
+                // v8.0 修正：如果戰鬥已結束，不接收下一回合指令
+                if(data.type === 'NEW_ROUND') {
+                    if (!Battle.isBattleOver) Battle.startRound(data.qIdx);
+                }
                 if(data.type === 'ANSWER') Battle.handleClientAnswer(data.correct, data.time);
                 if(data.type === 'RESULT') Battle.applyResult(data);
             },
@@ -613,28 +657,46 @@
         const Battle = {
             myHp: 0, myMaxHp: 0, myAtk: 0,
             enemyHp: 0, enemyMaxHp: 0, enemyAtk: 0, enemyFormId: 'baby',
+            // v8.0 新增屬性
+            enemyName: "對手", myName: "你", isBattleOver: false,
+
             isHost: false, hostStreak: 0, clientStreak: 0, myMove: null, clientMove: null, 
             init(opponentIsHost) {
                 this.isHost = !opponentIsHost; 
+                this.isBattleOver = false; // 重置戰鬥狀態
+
                 const d = SaveSystem.data;
                 const s = getStats(d.formId, d.level);
                 this.myHp = s.hp; this.myMaxHp = s.hp; this.myAtk = s.atk;
+                this.myName = d.playerName || "你"; // 載入我的名字
+
                 this.hostStreak = 0; this.clientStreak = 0;
                 const myImg = document.getElementById('my-img');
                 myImg.src = BEAR_DB[d.formId].img;
                 myImg.style.display = 'block'; 
+                
                 document.getElementById('battle-my-hp-val').innerText = this.myHp;
+                
+                // v8.0 更新介面名字
+                document.getElementById('enemy-name-display').innerText = this.enemyName;
+                document.getElementById('my-name-display').innerText = this.myName;
+
                 this.updateUI();
                 UI.showScreen('screen-battle');
                 if(this.isHost) setTimeout(() => this.broadcastNewRound(), 2000);
                 else document.getElementById('battle-msg').innerText = "等待房主開始...";
             },
             broadcastNewRound() {
+                // v8.0 修正：戰鬥結束就不發新回合
+                if(this.isBattleOver) return;
+
                 const qIdx = Math.floor(Math.random() * QUESTIONS.length);
                 Network.send({ type: 'NEW_ROUND', qIdx: qIdx });
                 this.startRound(qIdx);
             },
             startRound(qIdx) {
+                if(this.isBattleOver) return;
+
                 this.myMove = null; this.clientMove = null;
                 document.getElementById('battle-msg').innerText = "戰鬥開始！";
                 Quiz.show(qIdx, true); 
@@ -668,7 +730,11 @@
                         if (this.clientStreak >= 3) { res.isCrit = true; res.dmg *= 2; this.clientStreak = 0; const skill = BEAR_DB[this.enemyFormId] || BEAR_DB['baby']; res.skillName = skill.skillName; res.skillColor = skill.skillColor; }
                     } else { this.hostStreak = 0; this.clientStreak = 0; res.dmg = Math.floor(this.myMaxHp * 0.1); }
                     this.applyResult(res); Network.send({ type: 'RESULT', ...res }); 
-                    setTimeout(() => this.broadcastNewRound(), res.isCrit ? 5000 : 4000); 
+                    
+                    // v8.0 修正：只有戰鬥未結束才進入下一回合
+                    setTimeout(() => {
+                        if(!this.isBattleOver) this.broadcastNewRound();
+                    }, res.isCrit ? 5000 : 4000); 
                 }
             },
             applyResult(res) {
@@ -693,9 +759,22 @@
                 }
             },
             checkWin() {
-                if(this.myHp <= 0 || this.enemyHp <= 0) { SaveSystem.data.matches = (SaveSystem.data.matches || 0) + 1; }
-                if(this.myHp <= 0) { SaveSystem.save(); setTimeout(() => { UI.showBattleResult(false); }, 1500); }
-                else if(this.enemyHp <= 0) { SaveSystem.data.coins += 1000; SaveSystem.data.wins = (SaveSystem.data.wins || 0) + 1; SaveSystem.save(); setTimeout(() => { UI.showBattleResult(true); }, 1500); }
+                if(this.myHp <= 0 || this.enemyHp <= 0) { 
+                    this.isBattleOver = true; // v8.0：鎖定戰鬥，停止回合
+                    SaveSystem.data.matches = (SaveSystem.data.matches || 0) + 1; 
+                }
+                
+                if(this.myHp <= 0) { 
+                    SaveSystem.save(); 
+                    // v8.0：黑熊隊長永久停留，直到點擊
+                    setTimeout(() => { UI.showBattleResult(false); }, 1500); 
+                }
+                else if(this.enemyHp <= 0) { 
+                    SaveSystem.data.coins += 1000; 
+                    SaveSystem.data.wins = (SaveSystem.data.wins || 0) + 1; 
+                    SaveSystem.save(); 
+                    setTimeout(() => { UI.showBattleResult(true); }, 1500); 
+                }
             },
             updateUI() {
                 document.getElementById('my-hp').style.width = Math.max(0, (this.myHp/this.myMaxHp)*100) + "%";
@@ -737,18 +816,12 @@
                         AudioSys.play('correct'); SaveSystem.data.coins += 200; SaveSystem.save(); UI.showFloat("💰 +$200"); 
                         setTimeout(() => { UI.hideModal('modal-quiz'); }, 1000);
                     } else { 
-                        // ▼▼▼ 關鍵修正：答錯流程 ▼▼▼
                         btnElement.style.background = '#f8d7da'; btnElement.style.border = '2px solid #dc3545';
                         AudioSys.play('wrong');
                         setTimeout(() => { 
-                            // 1. 先關閉題目視窗，避免遮擋
                             UI.hideModal('modal-quiz');
-                            
-                            // 2. 設定詳解內容
                             const expText = this.currentQ.explanation || "本題暫無詳解";
                             document.getElementById('exp-content').innerHTML = expText;
-                            
-                            // 3. 開啟詳解視窗
                             UI.showModal('modal-explanation'); 
                         }, 1000);
                     }
