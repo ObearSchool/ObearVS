@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OBEAR 星際學院 v8.1 (智慧出題版)</title>
+    <title>OBEAR 星際學院 v8.2.1 (新增復興高二)</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
@@ -101,7 +101,7 @@
         
         #modal-explanation { z-index: 3000 !important; }
 
-        .quiz-box { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; max-height: 90vh; overflow-y: auto; }
+        .quiz-box { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; max-height: 90vh; overflow-y: auto; position: relative; }
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .opt-btn { background: #f8f9fa; border: 2px solid #e9ecef; color: #333; padding: 15px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; font-weight: bold; height: 80px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
 
@@ -195,7 +195,7 @@
 
     <div id="screen-login" class="screen active" style="background: var(--brand-primary);">
         <img src="assets/hero_banner.png" class="hero-banner" onerror="this.src='https://via.placeholder.com/500x250/003366/FFFFFF?text=OBEAR+Academy';">
-        <h1 style="color: white; margin-bottom: 20px; font-size: 1.8rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); text-align:center;">OBEAR 星際學院 v8.1</h1>
+        <h1 style="color: white; margin-bottom: 20px; font-size: 1.8rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); text-align:center;">OBEAR 星際學院 v8.2.1</h1>
         
         <input type="text" id="player-name-input" class="name-input" placeholder="請輸入你的名字 (例如: 王小明)">
 
@@ -205,7 +205,7 @@
         
         <div id="login-btns" style="display:flex; flex-direction:column; gap:10px; width:100%; align-items:center;"></div>
         
-        <div style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 20px; text-align:center;">v8.1 智慧出題版</div>
+        <div style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 20px; text-align:center;">v8.2.1 新增復興高二</div>
     </div>
 
     <div id="screen-home" class="screen">
@@ -295,6 +295,8 @@
 
     <div id="modal-quiz" class="modal-overlay">
         <div class="quiz-box">
+            <button id="btn-quit-quiz" class="btn btn-red" style="position:absolute; top:10px; right:10px; padding:5px 10px; font-size:0.8rem; display:none;" onclick="Quiz.quit()">🏃‍♂️ 結束特訓</button>
+
             <div id="q-content">
                 <div style="font-size:0.9rem; color:#888; margin-bottom:5px;">請作答</div>
                 <div id="q-text" style="font-size:1.5rem; font-weight:bold; margin-bottom:20px; line-height:1.4;">題目</div>
@@ -330,7 +332,8 @@
             "📚 國三自然複習": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=0&single=true&output=csv",
             "⚛️ 高二物理化學": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=1509348137&single=true&output=csv",
             "🔬 國二理化": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=680136498&single=true&output=csv",
-            "🏫 再興中學高二物化": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=49145040&single=true&output=csv"
+            "🏫 再興中學高二物化": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=49145040&single=true&output=csv",
+            "⚛️ 復興高二物理": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=458560649&single=true&output=csv"
         };
 
         const BEAR_DB = {
@@ -347,7 +350,7 @@
             { q: "載入中...", opts: ["...", "...", "...", "..."], a: 0, explanation: "無詳解" }
         ];
 
-        // === v8.1 新增：出題管理器 ===
+        // === v8.1 出題管理器 ===
         const QuestionManager = {
             count: 0,
             deck: [],
@@ -357,13 +360,10 @@
                 this.count = 0;
                 this.wrongQueue = [];
                 this.refillDeck(questions.length);
-                console.log("QuestionManager Initialized.");
             },
 
             refillDeck(total) {
-                // 產生 0 到 total-1 的陣列
                 this.deck = Array.from({length: total}, (_, i) => i);
-                // 洗牌 (Fisher-Yates)
                 for (let i = this.deck.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
@@ -372,23 +372,13 @@
 
             getNextIndex() {
                 this.count++;
-                
-                // 1. 重點題規則：每 15 題 (15, 30, 45...) 強制出前 11 題 (索引 0-10)
                 if (this.count % 15 === 0) {
-                    const priorityMax = Math.min(11, QUESTIONS.length); // 確保不超過總題數
-                    const priorityIndex = Math.floor(Math.random() * priorityMax);
-                    console.log("🔥 重點題插播！索引:", priorityIndex);
-                    return priorityIndex;
+                    const priorityMax = Math.min(11, QUESTIONS.length); 
+                    return Math.floor(Math.random() * priorityMax);
                 }
-
-                // 2. 錯題複習規則：每 5 題 (5, 10, 20...) 且有錯題
                 if (this.count % 5 === 0 && this.wrongQueue.length > 0) {
-                    const reviewIndex = this.wrongQueue.shift(); // 取出最早答錯的
-                    console.log("📖 錯題複習！索引:", reviewIndex);
-                    return reviewIndex;
+                    return this.wrongQueue.shift(); 
                 }
-
-                // 3. 一般規則：不重複直到抽完
                 if (this.deck.length === 0) {
                     this.refillDeck(QUESTIONS.length);
                 }
@@ -397,13 +387,9 @@
 
             recordResult(index, isCorrect) {
                 if (!isCorrect) {
-                    // 答錯：加入錯題本 (避免重複加入)
                     if (!this.wrongQueue.includes(index)) {
                         this.wrongQueue.push(index);
                     }
-                } else {
-                    // 答對：如果是錯題本裡的，可以考慮移除？
-                    // 目前邏輯：答對一次就從佇列消失 (shift 已經移除了)，所以不用特別做事
                 }
             }
         };
@@ -706,11 +692,13 @@
             myHp: 0, myMaxHp: 0, myAtk: 0,
             enemyHp: 0, enemyMaxHp: 0, enemyAtk: 0, enemyFormId: 'baby',
             enemyName: "對手", myName: "你", isBattleOver: false,
+            roundTimer: null,
 
             isHost: false, hostStreak: 0, clientStreak: 0, myMove: null, clientMove: null, 
             init(opponentIsHost) {
                 this.isHost = !opponentIsHost; 
                 this.isBattleOver = false; 
+                if(this.roundTimer) clearTimeout(this.roundTimer); 
 
                 const d = SaveSystem.data;
                 const s = getStats(d.formId, d.level);
@@ -734,8 +722,6 @@
             broadcastNewRound() {
                 if(this.isBattleOver) return;
                 
-                // PVP 模式還是先用隨機，如果要套用智慧出題會比較複雜 (需同步 RNG)
-                // 這裡暫時維持隨機，以免兩邊題目不同步
                 const qIdx = Math.floor(Math.random() * QUESTIONS.length);
                 Network.send({ type: 'NEW_ROUND', qIdx: qIdx });
                 this.startRound(qIdx);
@@ -776,7 +762,8 @@
                     } else { this.hostStreak = 0; this.clientStreak = 0; res.dmg = Math.floor(this.myMaxHp * 0.1); }
                     this.applyResult(res); Network.send({ type: 'RESULT', ...res }); 
                     
-                    setTimeout(() => {
+                    if(this.roundTimer) clearTimeout(this.roundTimer);
+                    this.roundTimer = setTimeout(() => {
                         if(!this.isBattleOver) this.broadcastNewRound();
                     }, res.isCrit ? 5000 : 4000); 
                 }
@@ -805,6 +792,7 @@
             checkWin() {
                 if(this.myHp <= 0 || this.enemyHp <= 0) { 
                     this.isBattleOver = true; 
+                    if(this.roundTimer) clearTimeout(this.roundTimer);
                     SaveSystem.data.matches = (SaveSystem.data.matches || 0) + 1; 
                 }
                 
@@ -828,23 +816,31 @@
 
         const Quiz = {
             startTime: 0, isPvp: false, currentQ: null, isLocked: false,
-            
-            // v8.1: 特訓時初始化題庫管理器
+            currentIndex: 0, 
+
             startTraining() { 
                 this.isPvp = false; 
                 QuestionManager.init(QUESTIONS); 
                 this.show(0, false); 
             },
             
+            quit() {
+                UI.hideModal('modal-quiz');
+                UI.showScreen('screen-home');
+            },
+
             show(qIdx, isPvp) {
                 this.isPvp = isPvp;
+                
+                if (isPvp && Battle.isBattleOver) return;
+
                 this.isLocked = false; 
                 
-                // v8.1: 如果是特訓，跟 QuestionManager 要題目；PVP 則用傳來的 qIdx
+                document.getElementById('btn-quit-quiz').style.display = isPvp ? 'none' : 'block';
+
                 let qIndex;
                 if (!isPvp) {
                     qIndex = QuestionManager.getNextIndex();
-                    // 記錄當前索引，方便 answer 時回報
                     this.currentIndex = qIndex; 
                 } else {
                     qIndex = qIdx;
@@ -874,14 +870,12 @@
                 
                 if(!this.isPvp) {
                     this.isLocked = true; 
-                    
-                    // v8.1: 回報答題結果給管理器 (記錄錯題)
                     QuestionManager.recordResult(this.currentIndex, isCorrect);
 
                     if(isCorrect) { 
                         btnElement.style.background = '#d4edda'; btnElement.style.border = '2px solid #28a745';
                         AudioSys.play('correct'); SaveSystem.data.coins += 200; SaveSystem.save(); UI.showFloat("💰 +$200"); 
-                        setTimeout(() => { UI.hideModal('modal-quiz'); this.show(0, false); }, 1000); // v8.1: 自動跳下一題
+                        setTimeout(() => { UI.hideModal('modal-quiz'); this.show(0, false); }, 1000); 
                     } else { 
                         btnElement.style.background = '#f8d7da'; btnElement.style.border = '2px solid #dc3545';
                         AudioSys.play('wrong');
@@ -900,10 +894,8 @@
             }
         };
 
-        // v8.1: 修正 UI.closeExplanation，讓它關閉後能自動繼續下一題
         UI.closeExplanation = function() {
             document.getElementById('modal-explanation').style.display = 'none';
-            // 如果是在特訓模式下，關閉詳解後應該自動跳下一題
             if (!Quiz.isPvp) {
                 Quiz.show(0, false);
             }
