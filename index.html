@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OBEAR 星際學院 v8.2.1 (新增復興高二)</title>
+    <title>OBEAR 星際學院 v8.3.1 (新增高一公立)</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
@@ -195,7 +195,7 @@
 
     <div id="screen-login" class="screen active" style="background: var(--brand-primary);">
         <img src="assets/hero_banner.png" class="hero-banner" onerror="this.src='https://via.placeholder.com/500x250/003366/FFFFFF?text=OBEAR+Academy';">
-        <h1 style="color: white; margin-bottom: 20px; font-size: 1.8rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); text-align:center;">OBEAR 星際學院 v8.2.1</h1>
+        <h1 style="color: white; margin-bottom: 20px; font-size: 1.8rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); text-align:center;">OBEAR 星際學院 v8.3.1</h1>
         
         <input type="text" id="player-name-input" class="name-input" placeholder="請輸入你的名字 (例如: 王小明)">
 
@@ -205,7 +205,7 @@
         
         <div id="login-btns" style="display:flex; flex-direction:column; gap:10px; width:100%; align-items:center;"></div>
         
-        <div style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 20px; text-align:center;">v8.2.1 新增復興高二</div>
+        <div style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 20px; text-align:center;">v8.3.1 新增高一公立</div>
     </div>
 
     <div id="screen-home" class="screen">
@@ -302,10 +302,12 @@
                 <div id="q-text" style="font-size:1.5rem; font-weight:bold; margin-bottom:20px; line-height:1.4;">題目</div>
                 <div id="q-options" class="options-grid"></div>
             </div>
+            
             <div id="q-waiting" style="display:none; flex-direction:column; align-items:center;">
                 <div style="font-size:3rem;">⏳</div>
                 <h3>已鎖定答案</h3>
                 <p>等待對手作答中...</p>
+                <button class="btn btn-red" onclick="Network.disconnect()" style="margin-top:20px; font-size:0.9rem;">😤 對手太慢了，結束連線</button>
             </div>
         </div>
     </div>
@@ -333,7 +335,8 @@
             "⚛️ 高二物理化學": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=1509348137&single=true&output=csv",
             "🔬 國二理化": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=680136498&single=true&output=csv",
             "🏫 再興中學高二物化": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=49145040&single=true&output=csv",
-            "⚛️ 復興高二物理": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=458560649&single=true&output=csv"
+            "⚛️ 復興高二物理": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=458560649&single=true&output=csv",
+            "🏫 高一公立物理": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCxrAze_6rnM3MXjNCO8UX1m12o3df8khWgJFVH0Fv9-lGqKQHaxucMCYT_lMay1kNUWH35l5NmQmB/pub?gid=1227967905&single=true&output=csv"
         };
 
         const BEAR_DB = {
@@ -539,6 +542,9 @@
             closeExplanation() {
                 document.getElementById('modal-explanation').style.display = 'none';
                 this.hideModal('modal-quiz'); 
+                if (!Quiz.isPvp) {
+                    Quiz.show(0, false);
+                }
             },
 
             showBattleResult(isWin) {
@@ -658,7 +664,12 @@
                 this.conn = conn;
                 conn.on('open', () => this.sendInfo(false)); 
                 conn.on('data', data => this.handle(data));
-                conn.on('close', () => { alert("對方斷線"); UI.showScreen('screen-home'); });
+                conn.on('close', () => { 
+                    alert("⚠️ 對方已斷線！");
+                    // 斷線後，確保如果卡在題目視窗，能強制關閉
+                    UI.hideModal('modal-quiz');
+                    UI.showScreen('screen-home'); 
+                });
             },
             send(data) { if(this.conn && this.conn.open) this.conn.send(data); },
             sendInfo(isHost) {
